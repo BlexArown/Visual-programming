@@ -39,7 +39,11 @@ fun main() {
         Human(fullName = "Андреев Андрей Валерьевич", age = 27, speed = 2.5),
         Human(fullName = "Пастухов Александр Андреевич", age = 19, speed = 1.3),
         Human(fullName = "Нейдорф Павел Яковлевич", age = 21, speed = 2.2),
-        Human(fullName = "Багазий Виктория Викторовна", age = 19, speed = 0.7)
+        Human(fullName = "Багазий Виктория Викторовна", age = 19, speed = 0.7),
+        Human(fullName = "Мунти Ольга Витальевна", age = 53, speed = 0.2),
+        Human(fullName = "Силко Оленна Минтивна", age = 43, speed = 1.2),
+        Human(fullName = "Вейд Максим Эдуардович", age = 23, speed = 2.1),
+        Human(fullName = "Жолар Тимур Батрудинович", age = 31, speed = 3.2)
     )
 
     val simulationTime = 5.0   // всего секунд
