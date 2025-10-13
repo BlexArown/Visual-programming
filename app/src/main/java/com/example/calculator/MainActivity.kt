@@ -1,0 +1,121 @@
+package com.example.calculator
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var mainText: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        mainText = findViewById(R.id.main_text)
+
+        // Простейшие кнопки, без CalcButton
+        val btn0 = findViewById<Button>(R.id.btn_0)
+        val btn1 = findViewById<Button>(R.id.btn_1)
+        val btn2 = findViewById<Button>(R.id.btn_2)
+        val btn3 = findViewById<Button>(R.id.btn_3)
+        val btn4 = findViewById<Button>(R.id.btn_4)
+        val btn5 = findViewById<Button>(R.id.btn_5)
+        val btn6 = findViewById<Button>(R.id.btn_6)
+        val btn7 = findViewById<Button>(R.id.btn_7)
+        val btn8 = findViewById<Button>(R.id.btn_8)
+        val btn9 = findViewById<Button>(R.id.btn_9)
+
+        val btnPlus = findViewById<Button>(R.id.btn_plus)
+        val btnMinus = findViewById<Button>(R.id.btn_minus)
+        val btnMul = findViewById<Button>(R.id.btn_umnozenie)
+        val btnDiv = findViewById<Button>(R.id.delenie)
+        val btnDot = findViewById<Button>(R.id.btn_zapyataya)
+        val btnAC = findViewById<Button>(R.id.AC)
+        val btnDel = findViewById<Button>(R.id.btn_delete)
+        val btnEq = findViewById<Button>(R.id.btn_ravno)
+
+        // Добавляем простое поведение кнопок
+        val buttons = listOf(btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9,
+            btnPlus, btnMinus, btnMul, btnDiv, btnDot)
+
+        for (b in buttons) {
+            b.setOnClickListener {
+                mainText.append(b.text)
+            }
+        }
+
+        btnAC.setOnClickListener { mainText.text = "" }
+
+        btnDel.setOnClickListener {
+            val str = mainText.text.toString()
+            if (str.isNotEmpty()) {
+                mainText.text = str.substring(0, str.length - 1)
+            }
+        }
+
+        btnEq.setOnClickListener {
+            val expr = mainText.text.toString()
+            mainText.text = calculate(expr)
+        }
+    }
+
+    // Простейший “топорный” калькулятор
+    private fun calculate(expression: String): String {
+        if (expression.isEmpty()) return ""
+
+        val numbers = mutableListOf<Double>()
+        val operators = mutableListOf<Char>()
+        var currentNumber = ""
+
+        // Проходим по всем символам
+        for (c in expression) {
+            if (c.isDigit() || c == '.') {
+                currentNumber += c
+            } else {
+                // Конец числа
+                if (currentNumber.isNotEmpty()) {
+                    numbers.add(currentNumber.toDouble())
+                    currentNumber = ""
+                }
+                // Если это оператор, добавляем в список
+                if (c == '+' || c == '-' || c == 'x' || c == '÷') {
+                    operators.add(c)
+                }
+            }
+        }
+
+        // Добавляем последнее число
+        if (currentNumber.isNotEmpty()) {
+            numbers.add(currentNumber.toDouble())
+        }
+
+        // Сначала умножение и деление
+        var i = 0
+        while (i < operators.size) {
+            val op = operators[i]
+            if (op == 'x' || op == '÷') {
+                val a = numbers[i]
+                val b = numbers[i + 1]
+                val res = if (op == 'x') a * b else if (b != 0.0) a / b else return "Деление на 0"
+                numbers[i] = res
+                numbers.removeAt(i + 1)
+                operators.removeAt(i)
+            } else {
+                i++
+            }
+        }
+
+        // Потом сложение и вычитание
+        var result = numbers[0]
+        for (j in operators.indices) {
+            val op = operators[j]
+            val b = numbers[j + 1]
+            if (op == '+') result += b
+            if (op == '-') result -= b
+        }
+
+        return if (result % 1 == 0.0) result.toInt().toString() else result.toString()
+    }
+}
