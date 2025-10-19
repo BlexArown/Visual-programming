@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
 
         mainText = findViewById(R.id.main_text)
 
-        // Простейшие кнопки, без CalcButton
         val btn0 = findViewById<Button>(R.id.btn_0)
         val btn1 = findViewById<Button>(R.id.btn_1)
         val btn2 = findViewById<Button>(R.id.btn_2)
@@ -36,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         val btnDel = findViewById<Button>(R.id.btn_delete)
         val btnEq = findViewById<Button>(R.id.btn_ravno)
 
-        // Добавляем простое поведение кнопок
         val buttons = listOf(btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9,
             btnPlus, btnMinus, btnMul, btnDiv, btnDot)
 
@@ -61,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Простейший “топорный” калькулятор
     private fun calculate(expression: String): String {
         if (expression.isEmpty()) return ""
 
@@ -69,29 +66,25 @@ class MainActivity : AppCompatActivity() {
         val operators = mutableListOf<Char>()
         var currentNumber = ""
 
-        // Проходим по всем символам
         for (c in expression) {
             if (c.isDigit() || c == '.') {
                 currentNumber += c
             } else {
-                // Конец числа
+
                 if (currentNumber.isNotEmpty()) {
                     numbers.add(currentNumber.toDouble())
                     currentNumber = ""
                 }
-                // Если это оператор, добавляем в список
                 if (c == '+' || c == '-' || c == 'x' || c == '÷') {
                     operators.add(c)
                 }
             }
         }
 
-        // Добавляем последнее число
         if (currentNumber.isNotEmpty()) {
             numbers.add(currentNumber.toDouble())
         }
 
-        // Сначала умножение и деление
         var i = 0
         while (i < operators.size) {
             val op = operators[i]
@@ -107,7 +100,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Потом сложение и вычитание
         var result = numbers[0]
         for (j in operators.indices) {
             val op = operators[j]
