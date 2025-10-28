@@ -89,3 +89,50 @@ constructor(name: String, age: Int, city: String) : this(name, age) {
 * **AndroidManifest.xml** — описание Activity приложения
 
 ---
+
+## 🧩 Часть 3. Рефакторинг и разделение по Activity
+
+### 🔄 Цель
+
+Реализовать **разделение функционала по Activity** и создание “хаба” для переходов.  
+Главная `MainActivity` теперь содержит кнопки перехода к отдельным экранам.
+
+### 🧭 Реализация
+
+* **MainActivity.kt** — “меню навигации” (hub), содержит кнопки:
+
+  * `Calculator`
+  * `Player`
+  * `Location`
+  * `Telephony`
+  * `Sockets`
+  * `Views`
+
+* **CalculatorActivity.kt** — перенесён весь функционал калькулятора
+
+* **AndroidManifest.xml** — обновлён с корректными ссылками на новые Activity
+
+  ```xml
+  <activity
+            android:name=".CalculatorActivity"
+            android:exported="false"
+            android:label="@string/title_activity_calculator_activity.kt"
+            android:theme="@style/Theme.Calculator" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+  ```
+
+### 🎨 Внешний вид
+
+Главный экран (`MainActivity`) оформлен в виде сетки кнопок (2 ряда по 3).  
+Используется фиолетовая цветовая схема, закруглённые углы (`rounded_button.xml`), и равномерное размещение элементов.  
+
+
+---
