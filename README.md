@@ -4,8 +4,7 @@
 
 ---
 
-# RandomWalk and SimpleCalculator
-
+# RandomWalk
 ##  Часть 1. Модель Random Walk
 
 В данной программе реализована **модель случайного блуждания (Random Walk)**.  
@@ -176,3 +175,4 @@ constructor(name: String, age: Int, city: String) : this(name, age) {
 - Пауза при выходе или сворачивании Activity
 
 ---
+
