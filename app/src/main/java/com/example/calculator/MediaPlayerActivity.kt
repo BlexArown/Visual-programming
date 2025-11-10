@@ -33,6 +33,9 @@ class MediaPlayerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var isUserSeeking = false
 
+    private var musicList = mutableListOf<Pair<String, String>>()
+    private var currentTrackIndex = -1
+
     // отслежка системной громкости
     private val volumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -57,6 +60,9 @@ class MediaPlayerActivity : AppCompatActivity() {
         currentTimeText = findViewById(R.id.currentTimeText)
         totalTimeText = findViewById(R.id.totalTimeText)
 
+        val nextButton = findViewById<Button>(R.id.btn_next)
+        val prevButton = findViewById<Button>(R.id.btn_prev)
+
         // настройка аудиоменеджера для громкости
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -78,7 +84,7 @@ class MediaPlayerActivity : AppCompatActivity() {
         // регистрирую изменение громкости
         registerReceiver(volumeReceiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION"))
 
-        // запрос разрешений
+        // запрос разрешения
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
@@ -89,10 +95,7 @@ class MediaPlayerActivity : AppCompatActivity() {
             }
         }
 
-        val permission = if (Build.VERSION.SDK_INT >= 33) {
-            Manifest.permission.READ_MEDIA_AUDIO
-        }
-        requestPermissionLauncher.launch(permission)
+        requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
 
         // запуск музыки
         playButton.setOnClickListener {
@@ -107,6 +110,20 @@ class MediaPlayerActivity : AppCompatActivity() {
         // пауза
         pauseButton.setOnClickListener {
             mediaPlayer?.pause()
+        }
+
+        nextButton.setOnClickListener {
+            if (currentTrackIndex < musicList.size - 1) {
+                currentTrackIndex++
+                playCurrentTrack()
+            }
+        }
+
+        prevButton.setOnClickListener {
+            if (currentTrackIndex > 0) {
+                currentTrackIndex--
+                playCurrentTrack()
+            }
         }
 
         // сикбар для перемотки
@@ -128,10 +145,9 @@ class MediaPlayerActivity : AppCompatActivity() {
         })
     }
 
-   // загрузка музыки через медиастор
+    // загрузка музыки через медиастор
     private fun loadMusicFiles() {
-        val musicList = mutableListOf<Pair<String, String>>()
-
+        musicList.clear()
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             android.provider.MediaStore.Audio.Media.getContentUri(android.provider.MediaStore.VOLUME_EXTERNAL)
         } else {
@@ -171,9 +187,15 @@ class MediaPlayerActivity : AppCompatActivity() {
         fileListView.adapter = adapter
 
         fileListView.setOnItemClickListener { _, _, position, _ ->
-            val (_, path) = musicList[position]
-            playFile(File(path))
+            currentTrackIndex = position
+            playCurrentTrack()
         }
+    }
+
+    private fun playCurrentTrack() {
+        if (currentTrackIndex < 0 || currentTrackIndex >= musicList.size) return
+        val (_, path) = musicList[currentTrackIndex]
+        playFile(File(path))
     }
 
     // воспроизведение файла
@@ -222,5 +244,4 @@ class MediaPlayerActivity : AppCompatActivity() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
-
 }
