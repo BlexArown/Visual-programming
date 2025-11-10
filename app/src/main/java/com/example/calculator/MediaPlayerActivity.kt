@@ -91,8 +91,6 @@ class MediaPlayerActivity : AppCompatActivity() {
 
         val permission = if (Build.VERSION.SDK_INT >= 33) {
             Manifest.permission.READ_MEDIA_AUDIO
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
         }
         requestPermissionLauncher.launch(permission)
 
@@ -224,4 +222,5 @@ class MediaPlayerActivity : AppCompatActivity() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
+
 }
