@@ -25,7 +25,7 @@
           <theme>@style/Theme.Calculator</theme>
         </config>
       </layout>
-      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_player.xml">
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_media_player.xml">
         <config>
           <theme>@style/Theme.Calculator</theme>
         </config>
@@ -55,8 +55,9 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin File" />
-        <option value="layoutResourceFile" />
         <option value="resourceFile" />
+        <option value="layoutResourceFile" />
+        <option value="Kotlin Class" />
       </list>
     </option>
   </component>
@@ -175,12 +176,12 @@
       <map>
         <entry key="com.example.calculator">
           <value>
-            <CheckInfo lastCheckTimestamp="1760896804737" />
+            <CheckInfo lastCheckTimestamp="1763279708511" />
           </value>
         </entry>
         <entry key="com.example.calculator.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1760896804739" />
+            <CheckInfo lastCheckTimestamp="1763279708509" />
           </value>
         </entry>
       </map>
