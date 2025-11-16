@@ -22,7 +22,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_location).setOnClickListener {
-            // позже
+            val intent = Intent(this, LocationActivity::class.java)
+            startActivity(intent)
         }
 
         findViewById<Button>(R.id.btn_telephony).setOnClickListener {
