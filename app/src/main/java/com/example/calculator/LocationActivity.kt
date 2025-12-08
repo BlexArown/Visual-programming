@@ -9,10 +9,10 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import org.json.JSONObject
@@ -43,6 +43,10 @@ class LocationActivity : AppCompatActivity(), LocationListener {
 
         findViewById<Button>(R.id.btn_back).setOnClickListener {
             finish()
+        }
+
+        findViewById<Button>(R.id.btn_show_log).setOnClickListener {
+            showLog()
         }
 
         getLastLocation()
@@ -82,20 +86,21 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun updateUI(loc: Location) {
-        val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val timeFromLocation = sdf.format(Date(loc.time))
 
         tvLat.text = "Широта: ${loc.latitude}"
         tvLon.text = "Долгота: ${loc.longitude}"
         tvAlt.text = "Высота: ${loc.altitude}"
-        tvTime.text = "Время: $time"
+        tvTime.text = "Время: $timeFromLocation"
     }
 
     private fun saveToJson(loc: Location) {
         val json = JSONObject()
-        json.put("latitude", loc.latitude)
-        json.put("longitude", loc.longitude)
-        json.put("altitude", loc.altitude)
-        json.put("time", System.currentTimeMillis())
+        json.put("широта", loc.latitude)
+        json.put("долгота", loc.longitude)
+        json.put("высота", loc.altitude)
+        json.put("время", loc.time)
 
         val file = File(filesDir, "location_log.json")
         file.appendText(json.toString() + "\n")
@@ -123,5 +128,22 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     private fun isLocationEnabled(): Boolean {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun showLog() {
+        val file = File(filesDir, "location_log.json")
+
+        if (!file.exists() || file.length() == 0L) {
+            Toast.makeText(this, "Файл лога пуст или ещё не создан", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val content = file.readText()
+
+        AlertDialog.Builder(this)
+            .setTitle("Лог местоположения")
+            .setMessage(content)
+            .setPositiveButton("OK", null)
+            .show()
     }
 }
