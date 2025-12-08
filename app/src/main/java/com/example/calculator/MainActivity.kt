@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_telephony).setOnClickListener {
-            // позже
+            startActivity(Intent(this, TelephonyActivity::class.java))
         }
 
         findViewById<Button>(R.id.btn_sockets).setOnClickListener {
