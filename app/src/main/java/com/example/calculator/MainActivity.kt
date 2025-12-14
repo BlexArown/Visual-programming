@@ -27,11 +27,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_telephony).setOnClickListener {
-            startActivity(Intent(this, TelephonyActivity::class.java))
+            val intent = Intent(this, TelephonyActivity::class.java)
+            startActivity(intent)
         }
 
         findViewById<Button>(R.id.btn_sockets).setOnClickListener {
-            // позже
+            val intent = Intent(this, SocketsActivity::class.java)
+            startActivity(intent)
         }
 
         findViewById<Button>(R.id.btn_views).setOnClickListener {
