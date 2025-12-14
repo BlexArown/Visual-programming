@@ -305,3 +305,52 @@ onLocationChanged()
 
 ---
 
+# Часть 6. TelephonyActivity
+
+## Описание
+`TelephonyActivity` предназначена для получения и отображения информации  
+о текущих сотовых сетях устройства с использованием `TelephonyManager`.
+
+Activity определяет тип сети и выводит технические параметры базовых станций.
+
+---
+
+## Функционал
+- Получение данных о сотовых ячейках
+- Поддержка сетей:
+  - **GSM (2G)**
+  - **LTE (4G)**
+  - **NR (5G)** (Android 10+)
+- Отображение параметров сети и уровня сигнала
+- Обновление данных по кнопке
+- Корректная обработка разрешений
+
+---
+
+## Используемые разрешения
+```xml
+<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
+---
+
+Отображаемые параметры
+
+### LTE (4G)
+- CI, EARFCN, PCI, TAC
+- MCC / MNC
+- RSRP, RSRQ, RSSI, RSSNR, CQI
+
+
+### GSM (2G)
+- CID, LAC, ARFCN, BSIC
+- MCC / MNC
+- Уровень сигнала (dBm)
+
+### 5G NR
+- NCI, NRARFCN, PCI, TAC
+- MCC / MNC
+- SS-RSRP, SS-RSRQ, SS-SINR
+
+---
