@@ -15,10 +15,12 @@
 local.properties
 
 # Gradle
+.gradle/
 build/
 **/build/
 
 # Android Studio
+.idea/
 *.iml
 
 # Local configuration
@@ -30,4 +32,3 @@ local.properties
 # OS-specific
 .DS_Store
 Thumbs.db
-
