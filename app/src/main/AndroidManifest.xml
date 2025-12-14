@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -23,14 +24,16 @@
             android:label="@string/title_activity_calculator_activity.kt"
             android:theme="@style/Theme.Calculator" />
         <activity
-            android:name=".TelephonyActivity" />
-        <activity
             android:name=".MediaPlayerActivity"
             android:exported="false"
             android:label="Media Player"
             android:theme="@style/Theme.Calculator" />
         <activity android:name=".LocationActivity"
             android:exported="false"/>
+        <activity
+            android:name=".TelephonyActivity" />
+        <activity
+            android:name=".SocketsActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
