@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -19,6 +22,8 @@
             android:exported="false"
             android:label="@string/title_activity_calculator_activity.kt"
             android:theme="@style/Theme.Calculator" />
+        <activity
+            android:name=".TelephonyActivity" />
         <activity
             android:name=".MediaPlayerActivity"
             android:exported="false"
