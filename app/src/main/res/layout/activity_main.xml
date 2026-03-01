@@ -95,4 +95,23 @@
             android:padding="12dp"
             android:background="@drawable/rounded_button"/>
     </LinearLayout>
+
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:layout_marginTop="12dp">
+
+    <Button
+        android:id="@+id/btn_bg_telemetry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BG Telemetry"
+        android:backgroundTint="#7E57C2"
+        android:textColor="#FFFFFF"
+        android:layout_margin="6dp"
+        android:padding="12dp"
+        android:background="@drawable/rounded_button"/>
+    </LinearLayout>
 </LinearLayout>

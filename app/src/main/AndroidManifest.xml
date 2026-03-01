@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:allowBackup="true"
@@ -34,7 +35,8 @@
         <activity
             android:name=".SocketsActivity" />
         <activity
-            android:name=".SerializationActivity" />
+            android:name=".LocationZmqActivity"
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -44,6 +46,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".TelemetryBgActivity" />
+        <service
+            android:name=".TelemetryBgService"
+            android:exported="false"
+            android:foregroundServiceType="location|dataSync" />
     </application>
 
 </manifest>

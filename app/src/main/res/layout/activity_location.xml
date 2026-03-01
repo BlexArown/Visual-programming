@@ -38,6 +38,15 @@
         android:textSize="18sp"
         android:layout_marginBottom="20dp" />
 
+    <!-- 🔹 Новая кнопка — показать лог JSON -->
+    <Button
+        android:id="@+id/btn_show_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Показать лог"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Кнопка "Назад" -->
     <Button
         android:id="@+id/btn_back"
         android:layout_width="wrap_content"
