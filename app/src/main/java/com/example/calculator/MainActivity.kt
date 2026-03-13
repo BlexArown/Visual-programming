@@ -43,5 +43,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_bg_telemetry).setOnClickListener {
             startActivity(Intent(this, TelemetryBgActivity::class.java))
         }
+        findViewById<Button>(R.id.btn_drive_test).setOnClickListener {
+            startActivity(Intent(this, DriveTestActivity::class.java))
+        }
     }
 }

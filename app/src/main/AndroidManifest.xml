@@ -55,6 +55,12 @@
             android:name=".TelemetryBgService"
             android:exported="false"
             android:foregroundServiceType="location|dataSync" />
+
+        <activity android:name=".DriveTestActivity" />
+        <service
+            android:name=".DriveTestService"
+            android:exported="false"
+            android:foregroundServiceType="location|dataSync" />
     </application>
 
 </manifest>

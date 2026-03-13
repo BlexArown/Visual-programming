@@ -114,4 +114,22 @@
         android:padding="12dp"
         android:background="@drawable/rounded_button"/>
     </LinearLayout>
+
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <Button
+        android:id="@+id/btn_drive_test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Drive Test"
+        android:backgroundTint="#7E57C2"
+        android:textColor="#FFFFFF"
+        android:layout_margin="6dp"
+        android:padding="12dp"
+        android:background="@drawable/rounded_button"/>
+    </LinearLayout>
 </LinearLayout>
