@@ -1,7 +1,10 @@
 package com.example.calculator
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,15 +20,40 @@ import java.io.File
 class DriveTestActivity : AppCompatActivity() {
 
     private lateinit var tvStatus: TextView
+    private lateinit var tvServerStatus: TextView
 
     private val PERMISSION_ID = 400
     private val logFileName = "drive_test_log.jsonl"
+
+    private val driveReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == DriveTestService.ACTION_DRIVE_TEST_UPDATE) {
+                val status = intent.getStringExtra(DriveTestService.EXTRA_STATUS) ?: "—"
+
+                tvStatus.text = "Статус сервиса: $status"
+
+                if (
+                    status.contains("сокет", ignoreCase = true) ||
+                    status.contains("сервер", ignoreCase = true) ||
+                    status.contains("Endpoint", ignoreCase = true) ||
+                    status.contains("отправлена", ignoreCase = true) ||
+                    status.contains("синхр", ignoreCase = true) ||
+                    status.contains("подключ", ignoreCase = true) ||
+                    status.contains("timeout", ignoreCase = true) ||
+                    status.contains("ошибка сокета", ignoreCase = true)
+                ) {
+                    tvServerStatus.text = "Подключение к серверу: $status"
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drive_test)
 
         tvStatus = findViewById(R.id.tv_status)
+        tvServerStatus = findViewById(R.id.tv_server_status)
 
         findViewById<Button>(R.id.btn_start).setOnClickListener {
             if (!checkPermissions()) {
@@ -37,7 +65,8 @@ class DriveTestActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btn_stop).setOnClickListener {
             stopService(Intent(this, DriveTestService::class.java))
-            tvStatus.text = "Статус: drive-test остановлен"
+            tvStatus.text = "Статус сервиса: drive-test остановлен"
+            tvServerStatus.text = "Подключение к серверу: отключено"
         }
 
         findViewById<Button>(R.id.btn_show_log).setOnClickListener {
@@ -49,6 +78,25 @@ class DriveTestActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(DriveTestService.ACTION_DRIVE_TEST_UPDATE)
+        ContextCompat.registerReceiver(
+            this,
+            driveReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try {
+            unregisterReceiver(driveReceiver)
+        } catch (_: Exception) {
+        }
+    }
+
     private fun startDriveTestService() {
         val intent = Intent(this, DriveTestService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -56,7 +104,8 @@ class DriveTestActivity : AppCompatActivity() {
         } else {
             startService(intent)
         }
-        tvStatus.text = "Статус: drive-test сервис запускается..."
+        tvStatus.text = "Статус сервиса: drive-test сервис запускается..."
+        tvServerStatus.text = "Подключение к серверу: ожидание..."
     }
 
     private fun showLog() {
