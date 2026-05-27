@@ -689,3 +689,730 @@ PCI 13 → RSRP = -89
 	3. БД используется только для хранения;  
 	4. реализована фильтрация некорректных значений (например, 2147483647);  
 	5. поддерживается работа с несколькими типами сетей (GSM, LTE, NR).  
+
+---
+
+# ПР14  
+## OpenStreetMap + Отрисовка карты + Тайловая система
+
+---
+
+## Цель работы
+
+Реализовать отображение OpenStreetMap-карты в backend-приложении с использованием:
+- Dear ImGui;
+- ImPlot;
+- OpenGL;
+- libcurl;
+- тайловой системы OpenStreetMap.
+
+Также реализовать:
+- загрузку PNG-тайлов с OSM-сервера;
+- локальное кэширование изображений;
+- динамическую подгрузку тайлов;
+- изменение zoom;
+- перемещение карты в реальном времени;
+- отображение GPS-координат Android-устройства на карте.
+
+---
+
+## Общая архитектура
+
+[ Android-приложение ]  
+├─ DriveTestService  
+├─ GPS + Telephony telemetry  
+└─ ZMQ REQ client  
+
+↓ tcp://<SERVER_IP>:5555  
+
+[ C++ Backend ]  
+├─ ZMQ REP server  
+├─ OSM tile loader  
+├─ PNG decoder (stb_image)  
+├─ OpenGL texture manager  
+├─ ImGui + ImPlot GUI  
+└─ Tile cache system  
+
+↓  
+
+[ OpenStreetMap Tile Server ]  
+https://tile.openstreetmap.org/{z}/{x}/{y}.png
+
+---
+
+## Используемые технологии
+
+- C++
+- OpenGL
+- GLFW
+- Dear ImGui
+- ImPlot
+- libcurl
+- stb_image
+- OpenStreetMap
+- Mercator Projection
+
+---
+
+## Принцип работы тайловой системы
+
+OpenStreetMap использует тайловую систему.
+
+Каждый тайл:
+- имеет размер `256x256` пикселей;
+- определяется координатами:
+  - `x`
+  - `y`
+  - `zoom`.
+
+Для отображения карты координаты GPS преобразуются:
+- из Latitude / Longitude
+- в Tile X / Tile Y.
+
+---
+
+## Преобразование координат
+
+### Longitude → tileX
+
+```cpp
+tileX = (lon_deg + 180.0) / 360.0 * (1 << zoom);
+```
+
+### Latitude → tileY
+
+```cpp
+lat_rad = lat_deg * M_PI / 180.0;
+
+tileY = (
+    1.0 - log(
+        tan(lat_rad) +
+        1.0 / cos(lat_rad)
+    ) / M_PI
+) / 2.0 * (1 << zoom);
+```
+
+---
+
+## Загрузка тайлов
+
+Backend-приложение автоматически определяет:
+- текущий центр карты;
+- текущий zoom;
+- размер окна ImGui.
+
+После этого вычисляется необходимое количество тайлов.
+
+Например:
+
+- окно `512x512`
+- размер тайла `256x256`
+
+=> требуется минимум `2x2 = 4 тайла`.
+
+---
+
+## Получение PNG через libcurl
+
+Для загрузки изображений используется libcurl.
+
+Пример endpoint:
+
+```text
+https://tile.openstreetmap.org/10/603/385.png
+```
+
+Алгоритм:
+1. Формируется URL;
+2. curl отправляет HTTP GET;
+3. PNG сохраняется во временный буфер;
+4. stb_image декодирует изображение;
+5. создаётся OpenGL texture.
+
+---
+
+## Кэширование тайлов
+
+Все загруженные изображения сохраняются локально.
+
+Структура директорий:
+
+```text
+build/
+└─ zoom/
+   └─ x/
+      └─ y.png
+```
+
+Пример:
+
+```text
+build/10/603/385.png
+```
+
+---
+
+## Логика работы кэша
+
+При запросе тайла:
+
+1. Проверяется наличие файла:
+   ```cpp
+   build/z/x/y.png
+   ```
+
+2. Если файл существует:
+   - тайл загружается с диска;
+
+3. Иначе:
+   - выполняется загрузка через curl;
+   - PNG сохраняется локально;
+   - создаётся texture OpenGL.
+
+Это уменьшает:
+- количество HTTP-запросов;
+- задержки отображения;
+- нагрузку на OSM-сервер.
+
+---
+
+## Работа с OpenGL texture
+
+После декодирования PNG:
+- изображение преобразуется в RGBA-массив;
+- создаётся texture OpenGL;
+- texture отображается внутри ImPlot.
+
+Используются функции:
+
+```cpp
+glGenTextures()
+glBindTexture()
+glTexImage2D()
+```
+
+---
+
+## Отображение карты
+
+Карта отображается в отдельном окне ImGui:
+
+```cpp
+ImGui::Begin("OSM Map");
+```
+
+Внутри окна:
+- отображаются тайлы;
+- отображается центр карты;
+- отображается текущий zoom;
+- рисуется точка текущего GPS-положения.
+
+---
+
+## Перемещение карты
+
+Реализовано:
+- изменение центра карты;
+- изменение zoom;
+- динамическая подгрузка новых тайлов.
+
+При изменении:
+- координат;
+- масштаба;
+- размера окна
+
+backend автоматически пересчитывает:
+- список видимых тайлов;
+- координаты отображения.
+
+---
+
+## Поддержка GPS-позиции
+
+После получения телеметрии:
+- сервер обновляет текущие координаты;
+- GUI автоматически перемещает центр карты;
+- отображается маркер положения устройства.
+
+---
+
+## Структура backend-проекта
+
+```text
+backend/
+├─ gui_thread.cpp
+├─ server_thread.cpp
+├─ osm_math.cpp
+├─ osm_math.h
+├─ tile_manager.cpp
+├─ tile_manager.h
+├─ curl_func.cpp
+├─ curl_func.h
+├─ main.cpp
+└─ CMakeLists.txt
+```
+
+---
+
+## Назначение файлов
+
+| Файл | Назначение |
+|---|---|
+| `gui_thread.cpp` | GUI, ImGui, ImPlot, отображение карты |
+| `server_thread.cpp` | ZMQ сервер и обработка телеметрии |
+| `osm_math.cpp` | Пересчёт координат и Mercator projection |
+| `tile_manager.cpp` | Управление тайлами и кэшем |
+| `curl_func.cpp` | HTTP-загрузка PNG через curl |
+| `main.cpp` | Точка входа |
+
+---
+
+## Асинхронная загрузка тайлов
+
+Загрузка изображений выполняется:
+- в отдельном потоке;
+- без остановки GUI.
+
+Это позволяет:
+- не блокировать интерфейс;
+- плавно перемещать карту;
+- догружать тайлы "на лету".
+
+---
+
+# ПР15  
+## Генерация Heatmap (тепловой карты)
+
+---
+
+## Цель работы
+
+Реализовать построение тепловой карты качества сигнала мобильной сети на основе:
+- GPS-координат;
+- параметров LTE / NR;
+- телеметрии Android-приложения.
+
+Тепловая карта строится:
+- поверх OpenStreetMap;
+- в реальном времени;
+- на основе метода IDW (Inverse Distance Weighting).
+
+---
+
+## Используемые параметры сигнала
+
+Heatmap может строиться по:
+- RSRP;
+- RSRQ;
+- RSSI;
+- SINR;
+- Altitude.
+
+Для LTE поддерживается разделение:
+- по EARFCN;
+- по PCI.
+
+---
+
+## Используемые технологии
+
+- C++
+- Dear ImGui
+- ImPlot
+- OpenGL
+- PostgreSQL
+- OpenStreetMap
+- IDW interpolation
+
+---
+
+## Общая архитектура
+
+[ Android-приложение ]  
+├─ GPS telemetry  
+├─ LTE / NR параметры  
+└─ ZMQ transmission  
+
+↓  
+
+[ Backend Server ]  
+├─ PostgreSQL storage  
+├─ HeatPoint generator  
+├─ IDW interpolation  
+├─ Heatmap texture builder  
+└─ OpenGL renderer  
+
+↓  
+
+[ Heatmap Overlay ]  
+поверх OpenStreetMap
+
+---
+
+## Принцип работы Heatmap
+
+Сервер получает:
+- координаты устройства;
+- параметры сигнала.
+
+После этого:
+1. формируются точки измерений;
+2. выполняется интерполяция;
+3. создаётся цветовая карта покрытия.
+
+---
+
+## Метод IDW
+
+Для интерполяции используется метод:
+
+Inverse Distance Weighting (IDW)
+
+Идея метода:
+- ближайшие точки влияют сильнее;
+- дальние точки влияют слабее.
+
+---
+
+## Формула IDW
+
+```text
+V(x) = Σ( wi * vi ) / Σ(wi)
+```
+
+где:
+
+- `vi` — значение сигнала в точке;
+- `wi` — вес точки.
+
+Вес вычисляется:
+
+```text
+wi = 1 / d^p
+```
+
+где:
+- `d` — расстояние;
+- `p` — степень влияния.
+
+---
+
+## Ограничение радиуса интерполяции
+
+Для уменьшения артефактов используется ограничение:
+
+```text
+10 - 40 метров
+```
+
+Если измерение находится слишком далеко:
+- точка не участвует в вычислении.
+
+Это позволяет:
+- избежать ложных значений;
+- повысить точность карты покрытия.
+
+---
+
+## Формирование heat points
+
+После получения телеметрии сервер:
+- извлекает координаты;
+- извлекает RSRP / RSSI / SINR;
+- создаёт heat point.
+
+Пример структуры:
+
+```cpp
+struct HeatPoint {
+    double lat;
+    double lon;
+    double value;
+    int pci;
+    int earfcn;
+};
+```
+
+---
+
+## Работа с PostgreSQL
+
+Точки могут:
+- сразу отображаться в GUI;
+- дополнительно загружаться из PostgreSQL.
+
+Используются таблицы:
+- `telemetry_packets`
+- `telemetry_cells`
+
+---
+
+## Генерация изображения heatmap
+
+Для каждой области карты:
+1. создаётся RGBA-buffer;
+2. выполняется IDW-интерполяция;
+3. вычисляется цвет пикселя;
+4. создаётся texture OpenGL.
+
+---
+
+## Цветовая схема
+
+### RSRP
+
+| Качество сигнала | Значение |
+|---|---|
+| Excellent | > -80 dBm |
+| Good | -80 ... -90 dBm |
+| Fair | -90 ... -100 dBm |
+| Poor | -100 ... -110 dBm |
+| No Signal | < -110 dBm |
+
+---
+
+## Цвета heatmap
+
+Используются следующие цвета:
+
+| Уровень | Цвет |
+|---|---|
+| Excellent | Красный |
+| Good | Оранжевый |
+| Fair | Жёлтый |
+| Poor | Синий |
+| No Signal | Не отображается |
+
+---
+
+## Отображение heatmap
+
+Heatmap отображается:
+- поверх тайлов OpenStreetMap;
+- внутри окна ImGui;
+- как OpenGL texture.
+
+---
+
+## GUI-интерфейс
+
+В интерфейсе реализовано:
+- переключение критерия:
+  - RSRP
+  - RSSI
+  - RSRQ
+  - SINR
+  - Altitude
+
+- выбор EARFCN;
+- изменение zoom;
+- включение / выключение heatmap.
+
+---
+
+## Производительность
+
+Вычисления heatmap выполняются:
+- в отдельном потоке;
+- независимо от GUI.
+
+Это позволяет:
+- избежать зависаний интерфейса;
+- обновлять карту в реальном времени;
+- продолжать обработку телеметрии.
+
+---
+
+## Кэширование heatmap
+
+Сгенерированные изображения сохраняются:
+
+```text
+build/zoom/x/y.png
+```
+
+или:
+
+```text
+build/heatmap.png
+```
+
+При повторном отображении:
+- изображение загружается из кэша;
+- повторное вычисление не требуется.
+
+---
+
+# Установка зависимостей
+
+---
+
+## Android-клиент
+
+### Требования
+
+- Android Studio
+- Android SDK
+- Kotlin
+- Gradle
+- Android API 29+
+
+---
+
+## Используемые библиотеки Android
+
+### ZeroMQ (JeroMQ)
+
+В `build.gradle`:
+
+```gradle
+implementation 'org.zeromq:jeromq:0.5.3'
+```
+
+---
+
+## Разрешения Android
+
+В `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+```
+
+---
+
+# Backend (C++)
+
+---
+
+## Linux / WSL Ubuntu
+
+### Установка основных зависимостей
+
+```bash
+sudo apt update
+```
+
+---
+
+### C++ toolchain
+
+```bash
+sudo apt install build-essential cmake ninja-build -y
+```
+
+---
+
+### OpenGL + GLFW
+
+```bash
+sudo apt install libglfw3-dev libgl1-mesa-dev -y
+```
+
+---
+
+### ZeroMQ
+
+```bash
+sudo apt install libzmq3-dev cppzmq-dev -y
+```
+
+---
+
+### PostgreSQL client
+
+```bash
+sudo apt install libpq-dev -y
+```
+
+---
+
+### CURL
+
+```bash
+sudo apt install libcurl4-openssl-dev -y
+```
+
+---
+
+### pkg-config
+
+```bash
+sudo apt install pkg-config -y
+```
+
+---
+
+## MSYS2 / MinGW64 (Windows)
+
+Установка выполняется через MSYS2 MinGW64.
+
+---
+
+### Обновление системы
+
+```bash
+pacman -Syu
+```
+
+---
+
+### Установка toolchain
+
+```bash
+pacman -S mingw-w64-x86_64-toolchain -y
+```
+
+---
+
+### OpenGL + GLFW
+
+```bash
+pacman -S mingw-w64-x86_64-glfw -y
+```
+
+---
+
+### ZeroMQ
+
+```bash
+pacman -S mingw-w64-x86_64-zeromq -y
+```
+
+---
+
+### cppzmq
+
+```bash
+pacman -S mingw-w64-x86_64-cppzmq -y
+```
+
+---
+
+### PostgreSQL
+
+```bash
+pacman -S mingw-w64-x86_64-postgresql -y
+```
+
+---
+
+### CURL
+
+```bash
+pacman -S mingw-w64-x86_64-curl -y
+```
+
+---
+
+### pkgconf
+
+```bash
+pacman -S mingw-w64-x86_64-pkgconf -y
+```
