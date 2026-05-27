@@ -41,7 +41,7 @@ class DriveTestService : Service(), LocationListener {
         private const val PREFS_NAME = "drive_test_sync_prefs"
         private const val KEY_LAST_SENT_OFFSET = "last_sent_offset"
     }
-
+    
     private val serverIp = "192.168.0.11"
     private val serverPort = 5555
     private val endpoint = "tcp://$serverIp:$serverPort"
