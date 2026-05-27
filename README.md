@@ -563,7 +563,7 @@ backend-server/
 ├─ формирование JSON (Telemetry)  
 └─ отправка по ZMQ (REQ)  
 
-↓ tcp://<SERVER_IP>:5555  
+ tcp://<SERVER_IP>:5555  
 
 [ C++ Backend Server ]  
 ├─ ZMQ REP socket  
@@ -572,7 +572,6 @@ backend-server/
 ├─ построение графиков (ImGui + ImPlot)  
 └─ запись в PostgreSQL  
 
-↓  
 
 [ PostgreSQL ]  
 ├─ telemetry_packets  
@@ -713,30 +712,6 @@ PCI 13 → RSRP = -89
 - изменение zoom;
 - перемещение карты в реальном времени;
 - отображение GPS-координат Android-устройства на карте.
-
----
-
-## Общая архитектура
-
-[ Android-приложение ]  
-├─ DriveTestService  
-├─ GPS + Telephony telemetry  
-└─ ZMQ REQ client  
-
-↓ tcp://<SERVER_IP>:5555  
-
-[ C++ Backend ]  
-├─ ZMQ REP server  
-├─ OSM tile loader  
-├─ PNG decoder (stb_image)  
-├─ OpenGL texture manager  
-├─ ImGui + ImPlot GUI  
-└─ Tile cache system  
-
-↓  
-
-[ OpenStreetMap Tile Server ]  
-https://tile.openstreetmap.org/{z}/{x}/{y}.png
 
 ---
 
@@ -936,50 +911,6 @@ backend автоматически пересчитывает:
 
 ---
 
-## Структура backend-проекта
-
-```text
-backend/
-├─ gui_thread.cpp
-├─ server_thread.cpp
-├─ osm_math.cpp
-├─ osm_math.h
-├─ tile_manager.cpp
-├─ tile_manager.h
-├─ curl_func.cpp
-├─ curl_func.h
-├─ main.cpp
-└─ CMakeLists.txt
-```
-
----
-
-## Назначение файлов
-
-| Файл | Назначение |
-|---|---|
-| `gui_thread.cpp` | GUI, ImGui, ImPlot, отображение карты |
-| `server_thread.cpp` | ZMQ сервер и обработка телеметрии |
-| `osm_math.cpp` | Пересчёт координат и Mercator projection |
-| `tile_manager.cpp` | Управление тайлами и кэшем |
-| `curl_func.cpp` | HTTP-загрузка PNG через curl |
-| `main.cpp` | Точка входа |
-
----
-
-## Асинхронная загрузка тайлов
-
-Загрузка изображений выполняется:
-- в отдельном потоке;
-- без остановки GUI.
-
-Это позволяет:
-- не блокировать интерфейс;
-- плавно перемещать карту;
-- догружать тайлы "на лету".
-
----
-
 # ПР15  
 ## Генерация Heatmap (тепловой карты)
 
@@ -1023,29 +954,6 @@ Heatmap может строиться по:
 - PostgreSQL
 - OpenStreetMap
 - IDW interpolation
-
----
-
-## Общая архитектура
-
-[ Android-приложение ]  
-├─ GPS telemetry  
-├─ LTE / NR параметры  
-└─ ZMQ transmission  
-
-↓  
-
-[ Backend Server ]  
-├─ PostgreSQL storage  
-├─ HeatPoint generator  
-├─ IDW interpolation  
-├─ Heatmap texture builder  
-└─ OpenGL renderer  
-
-↓  
-
-[ Heatmap Overlay ]  
-поверх OpenStreetMap
 
 ---
 
