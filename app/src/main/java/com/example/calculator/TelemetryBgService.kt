@@ -206,7 +206,6 @@ class TelemetryBgService : Service(), LocationListener {
     }
 
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-        // для старых API, можно оставить пустым
     }
 
     override fun onProviderEnabled(provider: String) {
